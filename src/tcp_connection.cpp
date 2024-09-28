@@ -45,15 +45,11 @@ std::string TCPConnection::sendCommand(unsigned int tag, std::string command) {
     throw std::runtime_error("Could not send command to server.");
   }
 
-  std::cout << command;
-
   // Get response from server
   std::string response = this->receive();
   while (!this->isResponseFull(response, tag)) {
     response.append(this->receive());
   }
-
-  std::cout << response;
 
   return response;
 }

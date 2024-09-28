@@ -64,9 +64,8 @@ int main(int argc, char** argv) {
 
   // Check if required command line arguments are set
   if (serverAddress.empty() || authFilePath.empty() || outputDirectory.empty()) {
-    std::cerr << "How to run the program:" << std::endl;
-    std::cerr << "imapcl server [-p port] [-T [-c certfile] [-C certaddr]] "
-                 "[-n] [-h] -a auth_file [-b MAILBOX] -o out_dir"
+    std::cerr << "How to run the program: ./imapcl server [-p port] [-T [-c certfile] [-C certaddr]] [-n] [-h] -a "
+                 "auth_file [-b MAILBOX] -o out_dir"
               << std::endl;
     return 1;
   }
@@ -123,6 +122,9 @@ int main(int argc, char** argv) {
       outputFile.write(email.second.c_str(), email.second.length());
       outputFile.close();
     }
+
+    // Write email count to standard output
+    std::cout << "Downloaded " << emails.size() << " emails from mailbox " << mailbox << std::endl;
 
     // Close connection to server
     client.logout();

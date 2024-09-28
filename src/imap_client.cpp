@@ -13,7 +13,7 @@ IMAPClient::IMAPClient(std::string hostname,
   connection = std::make_unique<SSLConnection>(hostname, port, certificateFile, certificatesFolderPath);
 
   // Receive server greeting
-  std::cout << this->connection->receive();
+  this->connection->receive();
 }
 
 IMAPClient::IMAPClient(std::string hostname, uint16_t port) {
@@ -21,7 +21,7 @@ IMAPClient::IMAPClient(std::string hostname, uint16_t port) {
   connection = std::make_unique<TCPConnection>(hostname, port);
 
   // Receive server greeting
-  std::cout << this->connection->receive();
+  this->connection->receive();
 }
 
 IMAPClient::~IMAPClient() {}
