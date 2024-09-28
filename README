@@ -1,0 +1,37 @@
+## Autor
+
+Christian Saloň <xsalon02>
+
+## Dátum vytvorenia
+
+28.09.2024
+
+## Popis programu
+
+Program imapcl, ktorý umožnuje čítanie elektronickej pošty pomocou protokolu IMAP. Program po spustení stiahne správy uložené na serveri a uloží ich do zadaného adresára. Na štandardný výstup vypíše počet stiahnutých správ. Pomocou dodatočných parametrov je možné funkcionalitu meniť. V interaktívnom režime sa program pripojí k schránke a bude bežať až do ukončenia príkazom QUIT. Používateľ bude mať možnosť sťahovať správy príkazom DOWNLOAD(NEW|ALL) [MAILDIR], čítať nové správy príkazom READNEW [MAILDIR].
+
+### Obmedzenia
+
+Program neumožnuje informovať užívateľa o prijatí novej správy.
+
+## Príklad spustenia
+
+make
+
+./imapcl server [-p port] [-T [-c certfile] [-C certaddr]] [-n] [-h] -a auth_file [-b MAILBOX] -o out_dir [-i]
+
+## Odovzdané súbory
+
+- src/
+  - connection.cpp
+  - connection.h
+  - imap_client.cpp
+  - imap_client.h
+  - main.cpp
+  - ssl_connection.cpp
+  - ssl_connection.h
+  - tcp_connection.cpp
+  - tcp_connection.h
+- Makefile
+- manual.pdf
+- README
