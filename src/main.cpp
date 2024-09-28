@@ -19,7 +19,42 @@ const uint16_t IMAPS_PORT = 993;
 const std::string DEFAULT_CERTIFICATES_DIRECTORY = "/etc/ssl/certs";
 const std::string DEFAULT_MAILBOX = "INBOX";
 
-int main(int argc, char** argv) {
+/**
+ * @brief Convert a string to lower case
+ *
+ * @param input Input string
+ * @return std::string Input string in lower case
+ */
+std::string toLowerCase(std::string input) {
+  std::string output = input;
+  std::transform(output.begin(), output.end(), output.begin(), [](unsigned char c) { return std::tolower(c); });
+
+  return output;
+}
+
+/**
+ * @brief Save emails to selected directory
+ *
+ * @param emails Pairs, where the key is the UID of an email and the value is the contents of the email
+ * @param directoryPath Path where to save emails
+ */
+void saveEmails(std::unordered_map<std::string, std::string> emails, std::string directoryPath) {
+  for (std::pair<std::string, std::string> email : emails) {
+    std::string outputFilePath = directoryPath + (directoryPath.ends_with("/") ? "" : "/") + email.first;
+    std::ofstream outputFile{outputFilePath};
+    outputFile.write(email.second.c_str(), email.second.length());
+    outputFile.close();
+  }
+}
+
+/**
+ * @brief Entry point
+ *
+ * @param argc Command line argument count
+ * @param argv Command line argument values
+ * @return int Return code
+ */
+int main(int argc, char **argv) {
   std::string serverAddress;
   uint16_t port = IMAP_PORT;
   bool isPortSet = false;
@@ -31,6 +66,7 @@ int main(int argc, char** argv) {
   std::string authFilePath;
   std::string mailbox = DEFAULT_MAILBOX;
   std::string outputDirectory;
+  bool interactiveMode = false;
 
   // Proccess command line arguments
   for (int i = 1; i < argc; i++) {
@@ -57,6 +93,8 @@ int main(int argc, char** argv) {
       mailbox = argv[++i];
     } else if (strcmp(argv[i], "-o") == 0) {
       outputDirectory = argv[++i];
+    } else if (strcmp(argv[i], "-i") == 0) {
+      interactiveMode = true;
     } else {
       serverAddress = argv[i];
     }
@@ -94,41 +132,74 @@ int main(int argc, char** argv) {
   authFile.close();
 
   try {
+    // Initialize imap client
     IMAPClient client = useSecure ? IMAPClient{serverAddress, port, certificateFilePath, certificatesDirectory}
                                   : IMAPClient{serverAddress, port};
     client.login(username, password);
 
-    // Fetch emails from server
-    std::unordered_map<std::string, std::string> emails;
-    client.select(mailbox);
-    if (useOnlyHeaders) {
-      if (useOnlyNewMessages) {
-        emails = client.fetchNew(IMAPClient::FetchOptions::HEADERS);
-      } else {
-        emails = client.fetch(IMAPClient::FetchOptions::HEADERS);
+    if (interactiveMode) {
+      std::string input;
+      while (true) {
+        // Get input from user
+        std::getline(std::cin, input);
+        input = toLowerCase(input);
+
+        // Parse user command
+        if (input.starts_with("downloadall")) {
+          std::string selectedMailbox = mailbox;
+          if (input.length() >= 13) {
+            // Select mailbox in user command
+            selectedMailbox = input.substr(12);
+          }
+
+          // Select mailbox and fetch all emails
+          client.select(selectedMailbox);
+          std::unordered_map<std::string, std::string> emails =
+              client.fetch(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
+          saveEmails(emails, outputDirectory);
+          std::cout << "Downloaded " << emails.size() << " emails from mailbox " << mailbox << "." << std::endl;
+        } else if (input.starts_with("downloadnew")) {
+          std::string selectedMailbox = mailbox;
+          if (input.length() >= 13) {
+            // Select mailbox in user command
+            selectedMailbox = input.substr(12);
+          }
+
+          // Select mailbox and fetch new emails
+          client.select(selectedMailbox);
+          std::unordered_map<std::string, std::string> emails =
+              client.fetchNew(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
+          saveEmails(emails, outputDirectory);
+          std::cout << "Downloaded " << emails.size() << " new emails from mailbox " << mailbox << "." << std::endl;
+        } else if (input.starts_with("readnew")) {
+          std::string selectedMailbox = mailbox;
+          if (input.length() >= 9) {
+            // Select mailbox in user command
+            selectedMailbox = input.substr(8);
+          }
+
+          client.read();
+          std::cout << "Emails in mailbox " << mailbox << " were read." << std::endl;
+        } else if (input.starts_with("quit")) {
+          break;
+        } else {
+          std::cerr << "ERROR: Invalid command." << std::endl;
+        }
       }
     } else {
+      // Fetch emails from server
+      std::unordered_map<std::string, std::string> emails;
+      client.select(mailbox);
       if (useOnlyNewMessages) {
-        emails = client.fetchNew(IMAPClient::FetchOptions::ALL);
+        emails = client.fetchNew(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
       } else {
-        emails = client.fetch(IMAPClient::FetchOptions::ALL);
+        emails = client.fetch(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
       }
+
+      saveEmails(emails, outputDirectory);
+      std::cout << "Downloaded " << emails.size() << " emails from mailbox " << mailbox << "." << std::endl;
     }
-
-    // Write emails to output directory
-    for (std::pair<std::string, std::string> email : emails) {
-      std::string outputFilePath = outputDirectory + (outputDirectory.ends_with("/") ? "" : "/") + email.first;
-      std::ofstream outputFile{outputFilePath};
-      outputFile.write(email.second.c_str(), email.second.length());
-      outputFile.close();
-    }
-
-    // Write email count to standard output
-    std::cout << "Downloaded " << emails.size() << " emails from mailbox " << mailbox << std::endl;
-
-    // Close connection to server
-    client.logout();
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     std::cerr << "ERROR: " << e.what() << std::endl;
     return 1;
   }

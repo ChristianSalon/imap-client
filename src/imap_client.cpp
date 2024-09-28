@@ -41,7 +41,10 @@ IMAPClient::IMAPClient(std::string hostname, uint16_t port) {
 /**
  * @brief Destroy the imap client
  */
-IMAPClient::~IMAPClient() {}
+IMAPClient::~IMAPClient() {
+  // Close connection to server
+  this->logout();
+}
 
 /**
  * @brief Authenticate a user by sending the LOGIN command to the server
@@ -55,7 +58,7 @@ void IMAPClient::login(std::string username, std::string password) {
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that login was successful
-  if (response.find(std::to_string(this->tag) + " OK") == std::string::npos) {
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
     throw std::runtime_error("Invalid auth credentials.");
   }
 
@@ -67,12 +70,17 @@ void IMAPClient::login(std::string username, std::string password) {
  * @brief Logout a user by sending the LOGOUT command to the server
  */
 void IMAPClient::logout() {
+  // Check if user is already logged out
+  if (!this->isLoggedIn) {
+    return;
+  }
+
   // Send LOGOUT command to server
   std::string command = std::to_string(this->tag) + " logout\r\n";
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that logout was successful
-  if (response.find(std::to_string(this->tag) + " OK") == std::string::npos) {
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
     throw std::runtime_error("Could not logout.");
   }
 
@@ -91,7 +99,7 @@ void IMAPClient::select(std::string mailbox) {
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that selecting mailbox was successful
-  if (response.find(std::to_string(this->tag) + " OK") == std::string::npos) {
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
     throw std::runtime_error("Could not select mailbox.");
   }
   this->mailbox = mailbox;
@@ -132,7 +140,7 @@ std::unordered_map<std::string, std::string> IMAPClient::fetch(FetchOptions opti
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that fetching emails was successful
-  if (response.find(std::to_string(this->tag) + " OK") == std::string::npos) {
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
     throw std::runtime_error("Could not fetch emails.");
   }
 
@@ -170,12 +178,36 @@ std::unordered_map<std::string, std::string> IMAPClient::fetchNew(FetchOptions o
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that fetching emails was successful
-  if (response.find(std::to_string(this->tag) + " OK") == std::string::npos) {
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
     throw std::runtime_error("Could not fetch emails.");
   }
 
   this->tag++;
   return this->parseEmails(response);
+}
+
+void IMAPClient::read() {
+  // User must be logged in before fetching emails
+  if (!this->isLoggedIn) {
+    throw std::runtime_error("User must be logged in before reading emails.");
+  }
+
+  // Get UIDs of new emails
+  std::string uids = this->getNewEmailUIDs();
+  if (uids.empty()) {
+    return;
+  }
+
+  // Send STORE command to server
+  std::string command = std::to_string(this->tag) + " store " + uids + " +flags(\\seen)\r\n";
+  std::string response = this->connection->sendCommand(this->tag, command);
+
+  // Verify that stroing flags was successful
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
+    throw std::runtime_error("Could not store flags.");
+  }
+
+  this->tag++;
 }
 
 /**
@@ -205,7 +237,8 @@ std::unordered_map<std::string, std::string> IMAPClient::parseEmails(std::string
 
     // Parse the email content
     std::string email = fetchResponse.substr(pointer + emailSizeEnd + 3, emailSize);
-    emails.insert({emailUID, email});
+    std::string fileName = this->mailbox + "_" + emailUID;
+    emails.insert({fileName, email});
 
     pointer += emailSizeEnd + 3 + emailSize + 3;
   }
@@ -229,7 +262,7 @@ std::string IMAPClient::getNewEmailUIDs() {
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that searching emails was successful
-  if (response.find(std::to_string(this->tag) + " OK") == std::string::npos) {
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
     throw std::runtime_error("Could not search emails.");
   }
 
@@ -241,7 +274,7 @@ std::string IMAPClient::getNewEmailUIDs() {
   std::string uids = response.substr(9, response.find_first_of("\r\n") - 9);
 
   // Replace all spaces with commas to create a valid sequence set
-  for (char& character : uids) {
+  for (char &character : uids) {
     if (character == ' ') {
       character = ',';
     }
@@ -257,7 +290,7 @@ std::string IMAPClient::getNewEmailUIDs() {
  * @param input Input string
  * @return std::string Input string in lower case
  */
-std::string IMAPClient::toLowerCase(std::string& input) {
+std::string IMAPClient::toLowerCase(std::string input) {
   std::string output = input;
   std::transform(output.begin(), output.end(), output.begin(), [](unsigned char c) { return std::tolower(c); });
 

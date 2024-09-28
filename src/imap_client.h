@@ -50,12 +50,13 @@ class IMAPClient {
   void select(std::string mailbox);
   std::unordered_map<std::string, std::string> fetch(FetchOptions options);
   std::unordered_map<std::string, std::string> fetchNew(FetchOptions options);
+  void read();
 
  protected:
   std::unordered_map<std::string, std::string> parseEmails(std::string fetchResponse);
   std::string getNewEmailUIDs();
 
-  std::string toLowerCase(std::string& input);
+  std::string toLowerCase(std::string input);
 };
 
 #endif
