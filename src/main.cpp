@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @author Christian Saloň
+ * @author Christian Saloň <xsalon02>
  */
 
 #include <cstdint>

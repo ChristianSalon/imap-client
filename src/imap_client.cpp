@@ -1,6 +1,6 @@
 /**
  * @file imap_client.cpp
- * @author Christian Saloň
+ * @author Christian Saloň <xsalon02>
  */
 
 #include "imap_client.h"

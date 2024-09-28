@@ -1,6 +1,6 @@
 /**
  * @file tcp_connection.h
- * @author Christian Saloň
+ * @author Christian Saloň <xsalon02>
  */
 
 #ifndef TCP_CONNECTION_H

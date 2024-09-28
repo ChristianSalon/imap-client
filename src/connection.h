@@ -1,6 +1,6 @@
 /**
  * @file connection.h
- * @author Christian Saloň
+ * @author Christian Saloň <xsalon02>
  */
 
 #ifndef CONNECTION_H

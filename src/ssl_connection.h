@@ -1,6 +1,6 @@
 /**
  * @file ssl_connection.h
- * @author Christian Saloň
+ * @author Christian Saloň <xsalon02>
  */
 
 #ifndef SSL_CONNECTION_H

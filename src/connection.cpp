@@ -1,6 +1,6 @@
 /**
  * @file connection.cpp
- * @author Christian Saloň
+ * @author Christian Saloň <xsalon02>
  */
 
 #include "connection.h"

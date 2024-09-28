@@ -1,6 +1,6 @@
 /**
  * @file tcp_connection.cpp
- * @author Christian Saloň
+ * @author Christian Saloň <xsalon02>
  */
 
 #include "tcp_connection.h"
