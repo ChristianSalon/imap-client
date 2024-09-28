@@ -17,11 +17,14 @@
 
 #include "connection.h"
 
+/**
+ * @brief Represents a ssl connection to an imap server
+ */
 class SSLConnection : public Connection {
  protected:
-  BIO* bio;
-  SSL_CTX* ctx;
-  SSL* ssl;
+  BIO *bio;
+  SSL_CTX *ctx;
+  SSL *ssl;
 
  public:
   SSLConnection(std::string hostname, uint16_t port, std::string certificateFile, std::string certificatesFolderPath);

@@ -5,6 +5,14 @@
 
 #include "connection.h"
 
+/**
+ * @brief Validates that the response from the server is correctly formated
+ *
+ * @param response Response from the server
+ * @param tag Tag of sent command to server
+ * @return true If response is valid
+ * @return false If response is not valid
+ */
 bool Connection::isResponseFull(std::string response, unsigned int tag) {
   if (response.length() == 0) {
     return false;

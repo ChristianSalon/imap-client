@@ -17,17 +17,26 @@
 #include "ssl_connection.h"
 #include "tcp_connection.h"
 
+/**
+ * @brief Represents a imap client
+ */
 class IMAPClient {
  public:
+  /// @brief Represent whether to fetch only headers or the full contents of an email
   enum class FetchOptions { ALL, HEADERS };
 
  protected:
+  /// @brief Connection to an imap server
   std::unique_ptr<Connection> connection;
 
+  /// @brief Represents if the user is logged in
   bool isLoggedIn{false};
+  /// @brief Tag used in commands that are sent to the server
   unsigned int tag{0};
 
+  /// @brief Selected mailbox
   std::string mailbox{"inbox"};
+  /// @brief Represents if the selected mailbox is empty
   bool isMailboxEmpty{true};
 
  public:

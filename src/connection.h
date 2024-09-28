@@ -8,6 +8,9 @@
 
 #include <string>
 
+/**
+ * @brief Represents a connection to a server
+ */
 class Connection {
  public:
   virtual std::string sendCommand(unsigned int tag, std::string command) = 0;
