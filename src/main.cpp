@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -30,6 +31,30 @@ std::string toLowerCase(std::string input) {
   std::transform(output.begin(), output.end(), output.begin(), [](unsigned char c) { return std::tolower(c); });
 
   return output;
+}
+
+/**
+ * @brief Save emails to selected directory
+ *
+ * @param emails Pairs, where the key is the UID of an email and the value is the contents of the email
+ * @param directoryPath Path where to save emails
+ */
+void deleteEmails(std::string hostname, std::string mailbox, std::string directoryPath) {
+  // Check if email directory exists
+  if (!std::filesystem::exists(directoryPath) || !std::filesystem::is_directory(directoryPath)) {
+    return;
+  }
+
+  for (const auto &file : std::filesystem::directory_iterator(directoryPath)) {
+    if (file.is_regular_file()) {
+      std::string filename = file.path().filename().string();
+
+      // Check if email filename starts with hostname and mailbox
+      if (filename.starts_with(hostname + "_" + mailbox)) {
+        std::filesystem::remove(file.path());
+      }
+    }
+  }
 }
 
 /**
@@ -136,6 +161,9 @@ int main(int argc, char **argv) {
     IMAPClient client = useSecure ? IMAPClient{serverAddress, port, certificateFilePath, certificatesDirectory}
                                   : IMAPClient{serverAddress, port};
     client.login(username, password);
+
+    // Delete emails that are in selected mailbox to ensure client is synced with server
+    deleteEmails(serverAddress, mailbox, outputDirectory);
 
     if (interactiveMode) {
       std::string input;
