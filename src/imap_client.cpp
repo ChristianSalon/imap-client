@@ -16,7 +16,8 @@
 IMAPClient::IMAPClient(std::string hostname,
                        uint16_t port,
                        std::string certificateFile,
-                       std::string certificatesFolderPath) {
+                       std::string certificatesFolderPath)
+    : hostname{hostname} {
   // Create a connection to server
   connection = std::make_unique<SSLConnection>(hostname, port, certificateFile, certificatesFolderPath);
 
@@ -30,7 +31,7 @@ IMAPClient::IMAPClient(std::string hostname,
  * @param hostname Server hostname
  * @param port Server port
  */
-IMAPClient::IMAPClient(std::string hostname, uint16_t port) {
+IMAPClient::IMAPClient(std::string hostname, uint16_t port) : hostname{hostname} {
   // Create a connection to server
   connection = std::make_unique<TCPConnection>(hostname, port);
 
@@ -237,7 +238,7 @@ std::unordered_map<std::string, std::string> IMAPClient::parseEmails(std::string
 
     // Parse the email content
     std::string email = fetchResponse.substr(pointer + emailSizeEnd + 3, emailSize);
-    std::string fileName = this->mailbox + "_" + emailUID;
+    std::string fileName = this->hostname + "_" + this->mailbox + "_" + emailUID + ".eml";
     emails.insert({fileName, email});
 
     pointer += emailSizeEnd + 3 + emailSize + 3;

@@ -28,6 +28,8 @@ class IMAPClient {
  protected:
   /// @brief Connection to an imap server
   std::unique_ptr<Connection> connection;
+  /// @brief Imap server hostname
+  std::string hostname;
 
   /// @brief Represents if the user is logged in
   bool isLoggedIn{false};
