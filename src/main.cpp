@@ -20,6 +20,22 @@ const uint16_t IMAPS_PORT = 993;
 const std::string DEFAULT_CERTIFICATES_DIRECTORY = "/etc/ssl/certs";
 const std::string DEFAULT_MAILBOX = "INBOX";
 
+const std::string getAllOutputMessage(std::size_t count, std::string mailbox) {
+  return "Downloaded " + std::to_string(count) + " emails from mailbox " + mailbox + ".";
+}
+
+const std::string getHeadersOutputMessage(std::size_t count, std::string mailbox) {
+  return "Downloaded headers from " + std::to_string(count) + " emails from mailbox " + mailbox + ".";
+}
+
+const std::string getNewOutputMessage(std::size_t count, std::string mailbox) {
+  return "Downloaded " + std::to_string(count) + " new emails from mailbox " + mailbox + ".";
+}
+
+const std::string getNewHeadersOutputMessage(std::size_t count, std::string mailbox) {
+  return "Downloaded headers from " + std::to_string(count) + " new emails from mailbox " + mailbox + ".";
+}
+
 /**
  * @brief Convert a string to lower case
  *
@@ -160,10 +176,6 @@ int main(int argc, char **argv) {
     // Initialize imap client
     IMAPClient client = useSecure ? IMAPClient{serverAddress, port, certificateFilePath, certificatesDirectory}
                                   : IMAPClient{serverAddress, port};
-    client.login(username, password);
-
-    // Delete emails that are in selected mailbox to ensure client is synced with server
-    deleteEmails(serverAddress, mailbox, outputDirectory);
 
     if (interactiveMode) {
       std::string input;
@@ -184,8 +196,12 @@ int main(int argc, char **argv) {
           client.select(selectedMailbox);
           std::unordered_map<std::string, std::string> emails =
               client.fetch(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
+          // Delete emails that are in selected mailbox to ensure client is synced with server
+          deleteEmails(serverAddress, selectedMailbox, outputDirectory);
           saveEmails(emails, outputDirectory);
-          std::cout << "Downloaded " << emails.size() << " emails from mailbox " << mailbox << "." << std::endl;
+          std::cout << (useOnlyHeaders ? getHeadersOutputMessage(emails.size(), mailbox)
+                                       : getAllOutputMessage(emails.size(), mailbox))
+                    << std::endl;
         } else if (input.starts_with("downloadnew")) {
           std::string selectedMailbox = mailbox;
           if (input.length() >= 13) {
@@ -198,7 +214,9 @@ int main(int argc, char **argv) {
           std::unordered_map<std::string, std::string> emails =
               client.fetchNew(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
           saveEmails(emails, outputDirectory);
-          std::cout << "Downloaded " << emails.size() << " new emails from mailbox " << mailbox << "." << std::endl;
+          std::cout << (useOnlyHeaders ? getNewHeadersOutputMessage(emails.size(), mailbox)
+                                       : getNewOutputMessage(emails.size(), mailbox))
+                    << std::endl;
         } else if (input.starts_with("readnew")) {
           std::string selectedMailbox = mailbox;
           if (input.length() >= 9) {
@@ -210,22 +228,45 @@ int main(int argc, char **argv) {
           std::cout << "Emails in mailbox " << mailbox << " were read." << std::endl;
         } else if (input.starts_with("quit")) {
           break;
+        } else if (input.starts_with("starttls")) {
+          if (client.startTls()) {
+            std::cout << "Started TLS." << std::endl;
+          }
+        } else if (input.starts_with("login")) {
+          // Authenticate user
+          client.login(username, password);
+          std::cout << "Logged in user " << username << "." << std::endl;
         } else {
           std::cerr << "ERROR: Invalid command." << std::endl;
         }
       }
     } else {
+      // Authenticate user
+      client.login(username, password);
+
       // Fetch emails from server
       std::unordered_map<std::string, std::string> emails;
       client.select(mailbox);
       if (useOnlyNewMessages) {
         emails = client.fetchNew(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
       } else {
+        // Delete emails that are in selected mailbox to ensure client is synced with server
+        deleteEmails(serverAddress, mailbox, outputDirectory);
+
         emails = client.fetch(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
       }
 
       saveEmails(emails, outputDirectory);
-      std::cout << "Downloaded " << emails.size() << " emails from mailbox " << mailbox << "." << std::endl;
+
+      if (useOnlyNewMessages) {
+        std::cout << (useOnlyHeaders ? getNewHeadersOutputMessage(emails.size(), mailbox)
+                                     : getNewOutputMessage(emails.size(), mailbox))
+                  << std::endl;
+      } else {
+        std::cout << (useOnlyHeaders ? getHeadersOutputMessage(emails.size(), mailbox)
+                                     : getAllOutputMessage(emails.size(), mailbox))
+                  << std::endl;
+      }
     }
   } catch (const std::exception &e) {
     std::cerr << "ERROR: " << e.what() << std::endl;

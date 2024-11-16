@@ -16,6 +16,8 @@ class Connection {
   virtual std::string sendCommand(unsigned int tag, std::string command) = 0;
   virtual std::string receive() = 0;
 
+  virtual int getFd() = 0;
+
   bool isResponseFull(std::string response, unsigned int tag);
 };
 

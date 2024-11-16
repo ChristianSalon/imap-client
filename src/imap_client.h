@@ -30,6 +30,12 @@ class IMAPClient {
   std::unique_ptr<Connection> connection;
   /// @brief Imap server hostname
   std::string hostname;
+  /// @brief Path to a certificate file used for validating ssl/tls certificate
+  std::string certificateFile;
+  /// @brief Path to a folder which is used for validating ssl/tls certificates
+  std::string certificatesFolderPath;
+  /// @brief Indicates whether using TLS
+  bool usingSecure;
 
   /// @brief Represents if the user is logged in
   bool isLoggedIn{false};
@@ -48,6 +54,8 @@ class IMAPClient {
 
   void login(std::string username, std::string password);
   void logout();
+
+  bool startTls();
 
   void select(std::string mailbox);
   std::unordered_map<std::string, std::string> fetch(FetchOptions options);

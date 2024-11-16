@@ -16,22 +16,26 @@
 #include "openssl/ssl.h"
 
 #include "connection.h"
+#include "tcp_connection.h"
 
 /**
  * @brief Represents a ssl connection to an imap server
  */
-class SSLConnection : public Connection {
+class SSLConnection : public TCPConnection {
+ public:
+  const std::string DEFAULT_CERTIFICATES_FOLDER_PATH = "/etc/ssl/certs";
+
  protected:
-  BIO *bio;
   SSL_CTX *ctx;
   SSL *ssl;
 
  public:
   SSLConnection(std::string hostname, uint16_t port, std::string certificateFile, std::string certificatesFolderPath);
+  SSLConnection(int fd, std::string certificateFile, std::string certificatesFolderPath);
   ~SSLConnection();
 
-  std::string sendCommand(unsigned int tag, std::string command);
-  std::string receive();
+  std::string sendCommand(unsigned int tag, std::string command) override;
+  std::string receive() override;
 };
 
 #endif

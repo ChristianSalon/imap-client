@@ -27,10 +27,15 @@ class TCPConnection : public Connection {
 
  public:
   TCPConnection(std::string hostname, uint16_t port);
-  ~TCPConnection();
+  TCPConnection(int fd);
+  ~TCPConnection() = default;
 
-  std::string sendCommand(unsigned int tag, std::string command);
-  std::string receive();
+  void closeConnection();
+
+  std::string sendCommand(unsigned int tag, std::string command) override;
+  std::string receive() override;
+
+  int getFd() override;
 };
 
 #endif

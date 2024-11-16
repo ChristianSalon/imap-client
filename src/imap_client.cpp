@@ -17,7 +17,10 @@ IMAPClient::IMAPClient(std::string hostname,
                        uint16_t port,
                        std::string certificateFile,
                        std::string certificatesFolderPath)
-    : hostname{hostname} {
+    : hostname{hostname},
+      certificateFile{certificateFile},
+      certificatesFolderPath{certificatesFolderPath},
+      usingSecure{true} {
   // Create a connection to server
   connection = std::make_unique<SSLConnection>(hostname, port, certificateFile, certificatesFolderPath);
 
@@ -31,7 +34,7 @@ IMAPClient::IMAPClient(std::string hostname,
  * @param hostname Server hostname
  * @param port Server port
  */
-IMAPClient::IMAPClient(std::string hostname, uint16_t port) : hostname{hostname} {
+IMAPClient::IMAPClient(std::string hostname, uint16_t port) : hostname{hostname}, usingSecure{false} {
   // Create a connection to server
   connection = std::make_unique<TCPConnection>(hostname, port);
 
@@ -45,6 +48,10 @@ IMAPClient::IMAPClient(std::string hostname, uint16_t port) : hostname{hostname}
 IMAPClient::~IMAPClient() {
   // Close connection to server
   this->logout();
+
+  if (!this->usingSecure) {
+    reinterpret_cast<TCPConnection *>(this->connection.get())->closeConnection();
+  }
 }
 
 /**
@@ -87,6 +94,30 @@ void IMAPClient::logout() {
 
   this->isLoggedIn = false;
   this->tag++;
+}
+
+bool IMAPClient::startTls() {
+  if (this->usingSecure) {
+    std::cerr << "Already using TLS." << std::endl;
+    return false;
+  }
+
+  // Send STARTTLS command to server
+  std::string command = std::to_string(this->tag) + " starttls\r\n";
+  std::string response = this->connection->sendCommand(this->tag, command);
+
+  // Verify that command STARTTLS was successful
+  if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
+    throw std::runtime_error("Could not start TLS.");
+  }
+
+  // Delete old TCP connection without closing connection to server and make connection secure
+  int fd = this->connection->getFd();
+  this->connection = std::make_unique<SSLConnection>(fd, certificateFile, certificatesFolderPath);
+  this->usingSecure = true;
+
+  this->tag++;
+  return true;
 }
 
 /**
@@ -132,7 +163,7 @@ std::unordered_map<std::string, std::string> IMAPClient::fetch(FetchOptions opti
 
   // Selected mailbox must not be empty
   if (this->isMailboxEmpty) {
-    throw std::runtime_error("Selected mailbox is empty.");
+    return {};
   }
 
   // Send FETCH command to server
@@ -164,7 +195,7 @@ std::unordered_map<std::string, std::string> IMAPClient::fetchNew(FetchOptions o
 
   // Selected mailbox must not be empty
   if (this->isMailboxEmpty) {
-    throw std::runtime_error("Selected mailbox is empty.");
+    return {};
   }
 
   // Get UIDs of new emails
