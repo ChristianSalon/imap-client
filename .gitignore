@@ -2,6 +2,7 @@
 build
 emails
 auth
+imapcl
 
 # ---> C++
 # Prerequisites
