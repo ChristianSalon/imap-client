@@ -1,4 +1,6 @@
 /**
+ * IMAP client
+ *
  * @file connection.cpp
  * @author Christian Saloň <xsalon02>
  */

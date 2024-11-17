@@ -1,4 +1,6 @@
 /**
+ * IMAP client
+ *
  * @file main.cpp
  * @author Christian Saloň <xsalon02>
  */
@@ -20,18 +22,46 @@ const uint16_t IMAPS_PORT = 993;
 const std::string DEFAULT_CERTIFICATES_DIRECTORY = "/etc/ssl/certs";
 const std::string DEFAULT_MAILBOX = "INBOX";
 
+/**
+ * @brief Get output message when downloading all emails
+ *
+ * @param count Fetched emails count
+ * @param mailbox Mailbox from where emails were fetched
+ * @return Output message displayed to user
+ */
 const std::string getAllOutputMessage(std::size_t count, std::string mailbox) {
   return "Downloaded " + std::to_string(count) + " emails from mailbox " + mailbox + ".";
 }
 
+/**
+ * @brief Get output message when downloading only headers for all emails
+ *
+ * @param count Fetched emails count
+ * @param mailbox Mailbox from where emails were fetched
+ * @return Output message displayed to user
+ */
 const std::string getHeadersOutputMessage(std::size_t count, std::string mailbox) {
   return "Downloaded headers from " + std::to_string(count) + " emails from mailbox " + mailbox + ".";
 }
 
+/**
+ * @brief Get output message when downloading new emails
+ *
+ * @param count Fetched emails count
+ * @param mailbox Mailbox from where emails were fetched
+ * @return Output message displayed to user
+ */
 const std::string getNewOutputMessage(std::size_t count, std::string mailbox) {
   return "Downloaded " + std::to_string(count) + " new emails from mailbox " + mailbox + ".";
 }
 
+/**
+ * @brief Get output message when downloading only headers for new emails
+ *
+ * @param count Fetched emails count
+ * @param mailbox Mailbox from where emails were fetched
+ * @return Output message displayed to user
+ */
 const std::string getNewHeadersOutputMessage(std::size_t count, std::string mailbox) {
   return "Downloaded headers from " + std::to_string(count) + " new emails from mailbox " + mailbox + ".";
 }

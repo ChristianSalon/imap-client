@@ -1,4 +1,6 @@
 /**
+ * IMAP client
+ *
  * @file imap_client.h
  * @author Christian Saloň <xsalon02>
  */
