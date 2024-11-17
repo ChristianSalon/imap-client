@@ -94,9 +94,9 @@ SSLConnection::SSLConnection(int fd, std::string certificateFile, std::string ce
   }
 
   // Check if the certificate sent from the server is valid
-  /* if (SSL_get_verify_result(this->ssl) != X509_V_OK) {
+  if (SSL_get_verify_result(this->ssl) != X509_V_OK) {
     throw std::runtime_error("Certificate sent from the server is not valid.");
-  } */
+  }
 }
 
 /**
