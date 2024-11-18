@@ -15,6 +15,8 @@
  */
 class Connection {
  public:
+  virtual ~Connection() = default;
+
   virtual std::string sendCommand(unsigned int tag, std::string command) = 0;
   virtual std::string receive() = 0;
 

@@ -170,7 +170,7 @@ std::unordered_map<std::string, std::string> IMAPClient::fetch(FetchOptions opti
 
   // Send FETCH command to server
   std::string command =
-      std::to_string(this->tag) + " fetch 1:* rfc822" + (options == FetchOptions::ALL ? "" : ".header") + "\r\n";
+      std::to_string(this->tag) + " fetch 1:* body.peek[" + (options == FetchOptions::ALL ? "" : "header") + "]\r\n";
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that fetching emails was successful
@@ -179,6 +179,8 @@ std::unordered_map<std::string, std::string> IMAPClient::fetch(FetchOptions opti
   }
 
   this->tag++;
+  this->read();
+
   return this->parseEmails(response);
 }
 
@@ -207,8 +209,8 @@ std::unordered_map<std::string, std::string> IMAPClient::fetchNew(FetchOptions o
   }
 
   // Send FETCH command to server
-  std::string command = std::to_string(this->tag) + " fetch " + uids + " rfc822" +
-                        (options == FetchOptions::ALL ? "" : ".header") + "\r\n";
+  std::string command = std::to_string(this->tag) + " fetch " + uids + " body.peek[" +
+                        (options == FetchOptions::ALL ? "" : "header") + "]\r\n";
   std::string response = this->connection->sendCommand(this->tag, command);
 
   // Verify that fetching emails was successful
@@ -217,6 +219,8 @@ std::unordered_map<std::string, std::string> IMAPClient::fetchNew(FetchOptions o
   }
 
   this->tag++;
+  this->read();
+
   return this->parseEmails(response);
 }
 
@@ -233,10 +237,10 @@ void IMAPClient::read() {
   }
 
   // Send STORE command to server
-  std::string command = std::to_string(this->tag) + " store " + uids + " +flags(\\seen)\r\n";
+  std::string command = std::to_string(this->tag) + " store " + uids + " +flags.silent (\\seen)\r\n";
   std::string response = this->connection->sendCommand(this->tag, command);
 
-  // Verify that stroing flags was successful
+  // Verify that storing flags was successful
   if (this->toLowerCase(response).find(std::to_string(this->tag) + " ok") == std::string::npos) {
     throw std::runtime_error("Could not store flags.");
   }

@@ -30,7 +30,7 @@ const std::string DEFAULT_MAILBOX = "INBOX";
  * @return Output message displayed to user
  */
 const std::string getAllOutputMessage(std::size_t count, std::string mailbox) {
-  return "Downloaded " + std::to_string(count) + " emails from mailbox " + mailbox + ".";
+  return "Downloaded " + std::to_string(count) + " email" + (count == 1 ? "" : "s") + " from mailbox " + mailbox + ".";
 }
 
 /**
@@ -41,7 +41,8 @@ const std::string getAllOutputMessage(std::size_t count, std::string mailbox) {
  * @return Output message displayed to user
  */
 const std::string getHeadersOutputMessage(std::size_t count, std::string mailbox) {
-  return "Downloaded headers from " + std::to_string(count) + " emails from mailbox " + mailbox + ".";
+  return "Downloaded headers from " + std::to_string(count) + " email" + (count == 1 ? "" : "s") + " from mailbox " +
+         mailbox + ".";
 }
 
 /**
@@ -52,7 +53,8 @@ const std::string getHeadersOutputMessage(std::size_t count, std::string mailbox
  * @return Output message displayed to user
  */
 const std::string getNewOutputMessage(std::size_t count, std::string mailbox) {
-  return "Downloaded " + std::to_string(count) + " new emails from mailbox " + mailbox + ".";
+  return "Downloaded " + std::to_string(count) + " new email" + (count == 1 ? "" : "s") + " from mailbox " + mailbox +
+         ".";
 }
 
 /**
@@ -63,7 +65,8 @@ const std::string getNewOutputMessage(std::size_t count, std::string mailbox) {
  * @return Output message displayed to user
  */
 const std::string getNewHeadersOutputMessage(std::size_t count, std::string mailbox) {
-  return "Downloaded headers from " + std::to_string(count) + " new emails from mailbox " + mailbox + ".";
+  return "Downloaded headers from " + std::to_string(count) + " new email" + (count == 1 ? "" : "s") +
+         " from mailbox " + mailbox + ".";
 }
 
 /**
@@ -254,7 +257,10 @@ int main(int argc, char **argv) {
             selectedMailbox = input.substr(8);
           }
 
+          // Select mailbox and read new emails
+          client.select(selectedMailbox);
           client.read();
+
           std::cout << "Emails in mailbox " << selectedMailbox << " were read." << std::endl;
         } else if (lowerCaseInput.starts_with("quit")) {
           break;

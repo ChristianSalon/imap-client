@@ -34,7 +34,7 @@ class SSLConnection : public TCPConnection {
  public:
   SSLConnection(std::string hostname, uint16_t port, std::string certificateFile, std::string certificatesFolderPath);
   SSLConnection(int fd, std::string certificateFile, std::string certificatesFolderPath);
-  ~SSLConnection();
+  ~SSLConnection() override;
 
   std::string sendCommand(unsigned int tag, std::string command) override;
   std::string receive() override;

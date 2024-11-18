@@ -30,7 +30,7 @@ class TCPConnection : public Connection {
  public:
   TCPConnection(std::string hostname, uint16_t port);
   TCPConnection(int fd);
-  ~TCPConnection() = default;
+  ~TCPConnection() override = default;
 
   void closeConnection();
 
