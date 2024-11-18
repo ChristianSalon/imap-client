@@ -212,10 +212,10 @@ int main(int argc, char **argv) {
       while (true) {
         // Get input from user
         std::getline(std::cin, input);
-        input = toLowerCase(input);
+        std::string lowerCaseInput = toLowerCase(input);
 
         // Parse user command
-        if (input.starts_with("downloadall")) {
+        if (lowerCaseInput.starts_with("downloadall")) {
           std::string selectedMailbox = mailbox;
           if (input.length() >= 13) {
             // Select mailbox in user command
@@ -229,10 +229,10 @@ int main(int argc, char **argv) {
           // Delete emails that are in selected mailbox to ensure client is synced with server
           deleteEmails(serverAddress, selectedMailbox, outputDirectory);
           saveEmails(emails, outputDirectory);
-          std::cout << (useOnlyHeaders ? getHeadersOutputMessage(emails.size(), mailbox)
-                                       : getAllOutputMessage(emails.size(), mailbox))
+          std::cout << (useOnlyHeaders ? getHeadersOutputMessage(emails.size(), selectedMailbox)
+                                       : getAllOutputMessage(emails.size(), selectedMailbox))
                     << std::endl;
-        } else if (input.starts_with("downloadnew")) {
+        } else if (lowerCaseInput.starts_with("downloadnew")) {
           std::string selectedMailbox = mailbox;
           if (input.length() >= 13) {
             // Select mailbox in user command
@@ -244,10 +244,10 @@ int main(int argc, char **argv) {
           std::unordered_map<std::string, std::string> emails =
               client.fetchNew(useOnlyHeaders ? IMAPClient::FetchOptions::HEADERS : IMAPClient::FetchOptions::ALL);
           saveEmails(emails, outputDirectory);
-          std::cout << (useOnlyHeaders ? getNewHeadersOutputMessage(emails.size(), mailbox)
-                                       : getNewOutputMessage(emails.size(), mailbox))
+          std::cout << (useOnlyHeaders ? getNewHeadersOutputMessage(emails.size(), selectedMailbox)
+                                       : getNewOutputMessage(emails.size(), selectedMailbox))
                     << std::endl;
-        } else if (input.starts_with("readnew")) {
+        } else if (lowerCaseInput.starts_with("readnew")) {
           std::string selectedMailbox = mailbox;
           if (input.length() >= 9) {
             // Select mailbox in user command
@@ -255,14 +255,14 @@ int main(int argc, char **argv) {
           }
 
           client.read();
-          std::cout << "Emails in mailbox " << mailbox << " were read." << std::endl;
-        } else if (input.starts_with("quit")) {
+          std::cout << "Emails in mailbox " << selectedMailbox << " were read." << std::endl;
+        } else if (lowerCaseInput.starts_with("quit")) {
           break;
-        } else if (input.starts_with("starttls")) {
+        } else if (lowerCaseInput.starts_with("starttls")) {
           if (client.startTls()) {
             std::cout << "Started TLS." << std::endl;
           }
-        } else if (input.starts_with("login")) {
+        } else if (lowerCaseInput.starts_with("login")) {
           // Authenticate user
           client.login(username, password);
           std::cout << "Logged in user " << username << "." << std::endl;
