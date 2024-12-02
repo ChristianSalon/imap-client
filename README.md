@@ -1,10 +1,6 @@
 ## Autor
 
-Christian Saloň <xsalon02>
-
-## Dátum vytvorenia
-
-28.09.2024
+Christian Saloň
 
 ## Popis programu
 
@@ -14,28 +10,8 @@ Program imapcl, ktorý umožnuje čítanie elektronickej pošty pomocou protokol
 
 Implementovaný interaktívny režim s podporou STARTTLS. Do interaktívneho režimu bol pridaný príkaz STARTTLS a príkaz LOGIN, ktorý autentizuje užívateľa s údajmi poskytnutých v autentizačnom súbore.
 
-### Obmedzenia
-
-Program neumožnuje informovať užívateľa o prijatí novej správy. Taktiež na začiatku v interaktívnom režime nevypisuje počet správ v schránkach.
-
 ## Príklad spustenia
 
 make
 
 ./imapcl server [-p port] [-T [-c certfile] [-C certaddr]] [-n] [-h] -a auth_file [-b MAILBOX] -o out_dir [-i]
-
-## Odovzdané súbory
-
-- src/
-  - connection.cpp
-  - connection.h
-  - imap_client.cpp
-  - imap_client.h
-  - main.cpp
-  - ssl_connection.cpp
-  - ssl_connection.h
-  - tcp_connection.cpp
-  - tcp_connection.h
-- Makefile
-- manual.pdf
-- README
